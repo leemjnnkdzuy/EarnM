@@ -2,3 +2,6 @@
 __pycache__/
 *.pyc
 downloads/
+*.mp3
+*.mp4
+*.txt
