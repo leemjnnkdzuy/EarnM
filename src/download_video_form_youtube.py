@@ -17,7 +17,7 @@ def download_youtube_video(url: str, output_path: str = "./") -> bool:
         if not has_ffmpeg:
             format_spec = 'best'
         else:
-            format_spec = 'bestvideo*+bestaudio/best'  # Get absolute best quality
+            format_spec = 'bestvideo*+bestaudio/best'
 
         os.makedirs(output_path, exist_ok=True)
         
@@ -31,7 +31,7 @@ def download_youtube_video(url: str, output_path: str = "./") -> bool:
                 'key': 'FFmpegVideoConvertor',
                 'preferedformat': 'mp4',
             }],
-            'format_sort': ['res:2160', 'res:1440', 'res:1080'],  # Prioritize high resolutions
+            'format_sort': ['res:2160', 'res:1440', 'res:1080'],
             'ignoreerrors': True,
             'fragment_retries': 5
         }

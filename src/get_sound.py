@@ -63,7 +63,7 @@ def extract_audio_and_silent_video(video_path, output_dir_audio, output_dir_vide
                 print(f"GPU encoding failed: {ve}")
                 return False
         else:
-            print("GPU not available. Please install NVIDIA GPU support for faster processing.")
+            print("GPU khong ho tro!")
             return False
         
         video.close()
