@@ -1,19 +1,7 @@
 from moviepy.editor import VideoFileClip
 import os
-import re
-import subprocess
 
-def sanitize_filename(filename):
-    clean_name = re.sub(r'[<>:"/\\|?*]', '', filename)
-    clean_name = clean_name.replace(' ', '_')
-    return clean_name
-
-def check_gpu_support():
-    try:
-        result = subprocess.run(['ffmpeg', '-hide_banner', '-encoders'], capture_output=True, text=True)
-        return 'h264_nvenc' in result.stdout or 'hevc_nvenc' in result.stdout
-    except:
-        return False
+from .utils import sanitize_filename, check_gpu_support
 
 def extract_audio_and_silent_video(video_path, output_dir_audio, output_dir_video):
     try:
@@ -34,7 +22,7 @@ def extract_audio_and_silent_video(video_path, output_dir_audio, output_dir_vide
         
         has_gpu = check_gpu_support()
         if has_gpu:
-            print("Using GPU acceleration for video processing...")
+            print("Dang dung GPU de processing video")
             try:
                 fps = video.fps
                 size = video.size
@@ -55,12 +43,12 @@ def extract_audio_and_silent_video(video_path, output_dir_audio, output_dir_vide
                         '-bufsize', '130M'
                     ],
                     write_logfile=False,
-                    threads=7,
+                    threads=16,
                     preset='slow',
                     audio=False
                 )
             except Exception as ve:
-                print(f"GPU encoding failed: {ve}")
+                print(f"Khong the dung GPU de processing video: {ve}")
                 return False
         else:
             print("GPU khong ho tro!")
@@ -70,7 +58,7 @@ def extract_audio_and_silent_video(video_path, output_dir_audio, output_dir_vide
         
         return True
     except Exception as e:
-        print(f"Error processing video: {e}")
+        print(f"ERR: {e}")
         if 'video' in locals():
             video.close()
         return False

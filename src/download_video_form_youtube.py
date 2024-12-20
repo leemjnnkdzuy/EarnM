@@ -1,14 +1,7 @@
 import yt_dlp
 import os
-import subprocess
-
-def check_ffmpeg():
-    try:
-        subprocess.run(['ffmpeg', '-version'], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-        return True
-    except FileNotFoundError:
-        print("Warning: ffmpeg is not installed. Using fallback format...")
-        return False
+import time
+from .utils import check_ffmpeg
 
 def download_youtube_video(url: str, output_path: str = "./") -> bool:
     try:
@@ -25,7 +18,8 @@ def download_youtube_video(url: str, output_path: str = "./") -> bool:
             'format': format_spec,
             'outtmpl': f'{output_path}/video.%(ext)s',
             'progress_hooks': [progress_hook],
-            'quiet': False,
+            'quiet': True,
+            'progress_with_newline': False,
             'merge_output_format': 'mp4',
             'postprocessors': [{
                 'key': 'FFmpegVideoConvertor',
@@ -45,7 +39,18 @@ def download_youtube_video(url: str, output_path: str = "./") -> bool:
         print(f"ERR: {str(e)}")
         return False
 
+last_update = 0
+
 def progress_hook(d):
-    if d['status'] == 'finished':
-        print('Tai thanh cong, bat dau noi doan khuc ...')
+    global last_update
+    if d['status'] == 'downloading':
+        current_time = time.time()
+        if current_time - last_update >= 0.5:
+            percent = d.get('_percent_str', '0.0%')
+            speed = d.get('_speed_str', 'N/A')
+            eta = d.get('_eta_str', 'N/A')
+            print(f"\rDownloading... {percent} Speed: {speed} ETA: {eta}", end='', flush=True)
+            last_update = current_time
+    elif d['status'] == 'finished':
+        print("\nTai thanh cong, bat dau noi doan khuc ...")
 

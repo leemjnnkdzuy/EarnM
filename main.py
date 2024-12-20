@@ -1,10 +1,10 @@
 import os
 from src.download_video_form_youtube import download_youtube_video
 from src.get_sound import extract_audio_and_silent_video
-from src.folder_utils import create_folders
+from src.utils import create_folders
 from src.get_sub import create_sub_from_mp3
 
-video_url = "https://www.youtube.com/watch?v=5PvzGDU8WjM"
+video_url = "https://www.youtube.com/watch?v=OuaW_IefFPg"
 NameFolder = "test1"
 
 def main():
