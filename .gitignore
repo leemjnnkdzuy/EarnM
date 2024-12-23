@@ -1,8 +1,24 @@
-.env/
+# Environment variables
+.env
+
+# Python
 __pycache__/
-*.pyc
-downloads/
-*.mp3
-*.mp4
-*.txt
-*.json
+*.py[cod]
+*$py.class
+
+# Virtual environment
+venv/
+env/
+ENV/
+
+# Output folders
+*/Downloads/
+*/OriginalSound/
+*/OriginalSubs/
+*/TranslateSubs/
+*/GeneratedAudio/
+*/FinalVideo/
+
+# Model files
+*.pt
+*.pth
