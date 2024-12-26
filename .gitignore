@@ -18,6 +18,7 @@ ENV/
 */TranslateSubs/
 */GeneratedAudio/
 */FinalVideo/
+*/GeneratedSubs/
 
 # Model files
 *.pt

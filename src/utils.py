@@ -21,7 +21,7 @@ def check_ffmpeg():
         )
         return True
     except FileNotFoundError:
-        print("Không tìm thấy ffmpeg")
+        print("\nKhông tìm thấy ffmpeg")
         return False
 
 def check_gpu_support():
@@ -62,6 +62,6 @@ def get_google_api_key():
     load_dotenv()
     api_key = os.getenv('GOOGLE_API_KEY')
     if not api_key:
-        raise ValueError("GOOGLE_API_KEY không được tìm thấy!")
-    print("GOOGLE_API_KEY load thành công!")
+        raise ValueError("GOOGLE_API_KEY không được tìm thấy!\n")
+    print("GOOGLE_API_KEY load thành công!\n")
     return api_key

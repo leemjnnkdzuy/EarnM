@@ -75,11 +75,11 @@ def translate_text(text: str, target_lang: str) -> str:
         if hasattr(response, 'text') and response.text:
             return response.text.strip()
         else:
-            print("No translation received")
+            print("\nKhông thể dịch văn bản.")
             return text
             
     except Exception as e:
-        print(f"Translation error: {str(e)}")
+        print(f"\nError: {str(e)}")
         return text
 
 def translate_subtitle_file(input_file: str, output_file: str, target_lang: str) -> bool:
@@ -114,7 +114,7 @@ def translate_subtitle_file(input_file: str, output_file: str, target_lang: str)
             time.sleep(1)
         
         if success_count == 0:
-            print("Không có chuck nào được tạo ra!")
+            print("\nKhông có chuck nào được tạo ra!")
             return False
         
         final_translation = " ".join(translated_chunks)
@@ -133,5 +133,5 @@ def translate_subtitle_file(input_file: str, output_file: str, target_lang: str)
         return success_count > 0
         
     except Exception as e:
-        print(f"ERROR: {e}")
+        print(f"\nError: {e}")
         return False

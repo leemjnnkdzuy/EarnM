@@ -1,77 +1,58 @@
-import torch
-import soundfile as sf
-from fairseq.checkpoint_utils import load_model_ensemble_and_task
+from TTS.api import TTS
 import json
 import os
-import numpy as np
+from pydub import AudioSegment
 
-def setup_tts():
+def generate_audio_from_text(tts, text: str, output_path: str, speaker_wav: str, language: str = "en") -> bool:
     try:
-        models, cfg, task = load_model_ensemble_and_task(
-            ['path/to/model.pt'],
-            task='text_to_speech'
+        tts.tts_to_file(
+            text=text,
+            file_path=output_path,
+            speaker_wav=[speaker_wav],
+            language=language,
+            split_sentences=True
         )
-        model = models[0].cuda() if torch.cuda.is_available() else models[0]
-        model.eval()
-        return model, task
+        return os.path.exists(output_path)
     except Exception as e:
-        print(f"Error initializing TTS: {e}")
-        return None, None
-
-def generate_audio_from_text(model, task, text: str, output_path: str) -> bool:
-    try:
-        # Prepare text input
-        sample = task.build_dataset_for_inference([text], [len(text)])
-        sample = [sample[0]]
-        
-        # Generate audio
-        with torch.no_grad():
-            net_output = model(sample)
-            audio = net_output['wav_out'][0].cpu().numpy()
-        
-        # Normalize audio
-        audio = audio / np.abs(audio).max()
-        
-        # Save as WAV file
-        sf.write(output_path, audio, task.cfg.sample_rate)
-        print(f"Generated: {os.path.basename(output_path)}")
-        return True
-        
-    except Exception as e:
-        print(f"Generation error: {str(e)}")
+        print(f"Error: {e}")
         return False
 
-def generate_audio(translated_file: str, output_dir: str, voice_name: str = None) -> bool:
-    """Main function to generate audio from translated subtitle"""
+def adjust_audio_duration(audio_file: str, start_time: float, end_time: float) -> bool:
     try:
-        model, task = setup_tts()
-        if not model or not task:
-            return False
-            
-        if not os.path.exists(translated_file):
-            print(f"Translation file not found: {translated_file}")
-            return False
-            
+        audio = AudioSegment.from_wav(audio_file)
+        
+        start_ms = int(start_time * 1000)
+        end_ms = int(end_time * 1000)
+        
+        audio_segment = audio[start_ms:end_ms]
+        
+        audio_segment.export(audio_file, format="wav")
+        return True
+    except Exception as e:
+        print(f"Error: {e}")
+        return False
+
+def generate_audio(translated_file: str, output_dir: str, speaker_wav: str, language: str = "en") -> bool:
+    try:
+        tts = TTS("tts_models/multilingual/multi-dataset/xtts_v2", gpu=True)
         os.makedirs(output_dir, exist_ok=True)
         
         with open(translated_file, 'r', encoding='utf-8') as f:
             subtitles = json.load(f)
-            
+
         for i, sub in enumerate(subtitles):
-            output_file = os.path.join(
-                output_dir,
-                f"audio_{i:03d}.wav"
-            )
+            output_file = os.path.join(output_dir, f"audio_{i:03d}.wav")
             
             print(f"\nGenerating audio {i+1}/{len(subtitles)}")
-            
-            if not generate_audio_from_text(model, task, sub['text'], output_file):
-                print(f"Failed to generate audio segment {i+1}")
+            if not generate_audio_from_text(tts, sub['text'], output_file, speaker_wav, language):
                 return False
                 
-        print("\n✓ Audio generation completed!")
+            if 'start' in sub and 'end' in sub:
+                if not adjust_audio_duration(output_file, sub['start'], sub['end']):
+                    return False
+
         return True
         
     except Exception as e:
-        print(f"Error in audio generation: {str(e)}")
+        print(f"Error: {e}")
         return False

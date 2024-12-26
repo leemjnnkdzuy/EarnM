@@ -52,5 +52,5 @@ def progress_hook(d):
             print(f"\rDownloading... {percent} Speed: {speed} ETA: {eta}", end='', flush=True)
             last_update = current_time
     elif d['status'] == 'finished':
-        print("\nTải video thành công, đang tách audio...")
+        print("\n\nTải video thành công, đang tách audio...")
 

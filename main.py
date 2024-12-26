@@ -6,11 +6,12 @@ from src.utils import create_folders
 from src.get_original_sub import create_sub_from_mp3 
 from src.translate_sub import translate_subtitle_file
 from src.generate_audio import generate_audio
+from src.get_translate_sub import create_sub_from_generated_audio
 
 voice_map = {
-    'en': 'David',
-    'vi': 'David',
-    'ja': 'David'
+    'en': 'path/to/english_speaker.wav',
+    'vi': 'path/to/vietnamese_speaker.wav',
+    'ja': 'path/to/japanese_speaker.wav'
 }
 
 video_url = "https://www.youtube.com/watch?v=OuaW_IefFPg"
@@ -34,50 +35,53 @@ async def async_main():
         generated_audio_path, 
         final_video_path
     ]):
-        print("Không thể tạo folder!")
+        print("\nKhông thể tạo folder!")
         return
         
     success = download_youtube_video(video_url, download_path)
     if not success:
-        print("Tải video không thành công!")
+        print("\nTải video không thành công!")
         return
         
     video_file = os.path.join(download_path, os.listdir(download_path)[0])
     
     if extract_audio(video_file, audio_path):
-        print("Tách audio thành công!")
+        print("\nTách audio thành công!")
     else:
-        print("Tách audio thất bại!!")
+        print("\nTách audio thất bại!!")
         return
 
     if not os.listdir(audio_path):
-        print("Khong có audio được tạo!")
+        print("\nKhông có audio được tạo!")
         return
 
     audio_file = os.path.join(audio_path, os.listdir(audio_path)[0])
     sub_file = os.path.join(subs_path, "subtitle.json")
     if create_sub_from_mp3(audio_file, sub_file):
-        print("Sub tạo thành công!")
+        print("\nSub tạo thành công!")
     else:
-        print("Tạo sub thất bại!")
+        print("\nTạo sub thất bại!")
         return
 
     if os.path.exists(sub_file):
         translated_file = os.path.join(translated_subs_path, f"translate_{TargetLang}_subtitle.json")
         
-        # Translation process
         print(f"\nBắt đầu dịch sang {TargetLang}...")
         if translate_subtitle_file(sub_file, translated_file, TargetLang):
-            print(f"✓ Hoàn thành dịch sang {TargetLang}")
+            print(f"\nHoàn thành dịch sang {TargetLang}")
             
-            # Audio generation
-            voice_name = voice_map.get(TargetLang)
-            if generate_audio(translated_file, generated_audio_path, voice_name):
-                print("✓ Tạo audio thành công!")
+            voice_sample = voice_map.get(TargetLang)
+            if generate_audio(translated_file, generated_audio_path, voice_sample, TargetLang):
+                print("\nTạo audio thành công!")
+                
+                if create_sub_from_generated_audio(generated_audio_path, translated_file):
+                    print("\nCập nhật sub từ audio thành công!")
+                else:
+                    print("\nCập nhật sub từ audio thất bại!")
             else:
-                print("✗ Tạo audio thất bại!")
+                print("Tạo audio thất bại!")
         else:
-            print("✗ Quá trình dịch không thành công")
+            print("Quá trình dịch không thành công")
 
 if __name__ == "__main__":
     asyncio.run(async_main())
