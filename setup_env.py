@@ -1,6 +1,5 @@
 import os
 import subprocess
-import sys
 import platform
 import ctypes
 import urllib.request
