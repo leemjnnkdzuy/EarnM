@@ -11,13 +11,13 @@ def is_admin():
     except:
         return False
 
-def get_python39_path():
+def get_python311_path():
     if platform.system() == "Windows":
         potential_paths = [
-            r"C:\Python39\python.exe",
-            r"C:\Users\%USERNAME%\AppData\Local\Programs\Python\Python39\python.exe",
-            r"C:\Program Files\Python39\python.exe",
-            r"C:\Program Files (x86)\Python39\python.exe"
+            r"C:\Python311\python.exe",
+            r"C:\Users\%USERNAME%\AppData\Local\Programs\Python\Python311\python.exe",
+            r"C:\Program Files\Python311\python.exe",
+            r"C:\Program Files (x86)\Python311\python.exe"
         ]
         for path in potential_paths:
             expanded_path = os.path.expandvars(path)
@@ -25,7 +25,7 @@ def get_python39_path():
                 return expanded_path
     else:
         try:
-            result = subprocess.run(['which', 'python3.9'], 
+            result = subprocess.run(['which', 'python3.11'], 
                                  capture_output=True, 
                                  text=True)
             if result.returncode == 0:
@@ -51,13 +51,13 @@ def setup_virtual_env():
         if not is_admin():
             print("Warning: Chạy không có quyền admin, một số thao tác có thể thất bại")
 
-        python39_path = get_python39_path()
-        if not python39_path:
-            print("Không tìm thấy Python 3.9. Hãy cài đặt Python 3.9 trước!")
+        python311_path = get_python311_path()
+        if not python311_path:
+            print("Không tìm thấy Python 3.11. Hãy cài đặt Python 3.11 trước!")
             return False
 
-        subprocess.run([python39_path, "-m", "venv", "venv"], check=True)
-        print("Đã tạo môi trường ảo với Python 3.9")
+        subprocess.run([python311_path, "-m", "venv", "venv"], check=True)
+        print("Đã tạo môi trường ảo với Python 3.11")
 
         if os.name == 'nt': 
             python_path = os.path.join("venv", "Scripts", "python")
@@ -87,7 +87,34 @@ def setup_virtual_env():
                 return False
 
         print("\nĐang cài đặt các thư viện...")
-        subprocess.run([python_path, "-m", "pip", "install", "-r", "requirements.txt"], check=True)
+        packages = [
+            "numpy",
+            "scipy",
+            "decorator",  
+            "imageio",   
+            "imageio-ffmpeg",  
+            "Pillow",    
+            "moviepy",    
+            "python-dotenv",
+            "pytube",
+            "pydub",
+            "ffmpeg-python",
+            "openai-whisper",
+            "TTS",
+            "yt_dlp",
+        ]
+        
+        for package in packages:
+            print(f"\nĐang cài đặt {package}...")
+            try:
+                if package in ["Pillow", "moviepy", "imageio", "imageio-ffmpeg"]:
+                    subprocess.run([python_path, "-m", "pip", "install", "--force-reinstall", package], check=True)
+                else:
+                    subprocess.run([python_path, "-m", "pip", "install", package], check=True)
+            except subprocess.CalledProcessError as e:
+                print(f"Lỗi khi cài đặt {package}: {e}")
+                return False
+
         print("Đã cài đặt thành công các thư viện")
 
         print("\nĐã thiết lập môi trường thành công!")
