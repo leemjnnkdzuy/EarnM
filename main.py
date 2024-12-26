@@ -8,16 +8,16 @@ from src.translate_sub import translate_subtitle_file
 from src.generate_audio import generate_audio
 from src.get_translate_sub import create_sub_from_generated_audio
 
+import warnings
+warnings.filterwarnings("ignore", category=FutureWarning)
+
 voice_map = {
-    'en': 'path/to/english_speaker.wav',
-    'vi': 'path/to/vietnamese_speaker.wav',
-    'ja': 'path/to/japanese_speaker.wav'
+    'en': "assets/voice/en/Kendra_voice.wav",
 }
 
 video_url = "https://www.youtube.com/watch?v=OuaW_IefFPg"
 NameFolder = "test1"
 TargetLang = "en"
-
 
 async def async_main():
     download_path = os.path.join(".", NameFolder, "Downloads")

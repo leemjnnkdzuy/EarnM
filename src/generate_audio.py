@@ -34,7 +34,11 @@ def adjust_audio_duration(audio_file: str, start_time: float, end_time: float) -
 
 def generate_audio(translated_file: str, output_dir: str, speaker_wav: str, language: str = "en") -> bool:
     try:
-        tts = TTS("tts_models/multilingual/multi-dataset/xtts_v2", gpu=True)
+        try:
+            tts = TTS("tts_models/multilingual/multi-dataset/xtts_v2", gpu=True)
+        except:
+            print("CUDA not available, falling back to CPU.")
+            tts = TTS("tts_models/multilingual/multi-dataset/xtts_v2", gpu=False)
         os.makedirs(output_dir, exist_ok=True)
         
         with open(translated_file, 'r', encoding='utf-8') as f:

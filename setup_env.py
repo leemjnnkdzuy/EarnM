@@ -10,10 +10,13 @@ def is_admin():
     except:
         return False
 
-def get_python313_path():
+def get_python311_path():
     if platform.system() == "Windows":
         potential_paths = [
-            r"C:\Users\%USERNAME%\AppData\Local\Programs\Python\Python313\python.exe",
+            r"C:\Python311\python.exe",
+            r"C:\Users\%USERNAME%\AppData\Local\Programs\Python\Python311\python.exe",
+            r"C:\Program Files\Python311\python.exe",
+            r"C:\Program Files (x86)\Python311\python.exe"
         ]
         for path in potential_paths:
             expanded_path = os.path.expandvars(path)
@@ -21,7 +24,7 @@ def get_python313_path():
                 return expanded_path
     else:
         try:
-            result = subprocess.run(['which', 'python3.13'], 
+            result = subprocess.run(['which', 'python3.11'], 
                                  capture_output=True, 
                                  text=True)
             if result.returncode == 0:
@@ -47,13 +50,13 @@ def setup_virtual_env():
         if not is_admin():
             print("Warning: Chạy không có quyền admin, một số thao tác có thể thất bại")
 
-        python311_path = get_python313_path()
+        python311_path = get_python311_path()
         if not python311_path:
-            print("Không tìm thấy Python 3.13. Hãy cài đặt Python 3.13 trước!")
+            print("Không tìm thấy Python 3.11. Hãy cài đặt Python 3.11 trước!")
             return False
 
         subprocess.run([python311_path, "-m", "venv", "venv"], check=True)
-        print("Đã tạo môi trường ảo với Python 3.13")
+        print("Đã tạo môi trường ảo với Python 3.11")
 
         if os.name == 'nt': 
             python_path = os.path.join("venv", "Scripts", "python")

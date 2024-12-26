@@ -1,4 +1,4 @@
-from moviepy.editor import VideoFileClip
+from moviepy import *
 from .utils import sanitize_filename
 import os
 
