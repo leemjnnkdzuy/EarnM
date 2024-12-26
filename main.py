@@ -48,7 +48,7 @@ async def async_main():
     if extract_audio(video_file, audio_path):
         print("\nTách audio thành công!")
     else:
-        print("\nTách audio thất bại!!")
+        print("\nTách audio thất bại!")
         return
 
     if not os.listdir(audio_path):

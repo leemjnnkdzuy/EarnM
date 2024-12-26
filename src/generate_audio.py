@@ -37,7 +37,7 @@ def generate_audio(translated_file: str, output_dir: str, speaker_wav: str, lang
         try:
             tts = TTS("tts_models/multilingual/multi-dataset/xtts_v2", gpu=True)
         except:
-            print("CUDA not available, falling back to CPU.")
+            print("Sử dụng CPU.")
             tts = TTS("tts_models/multilingual/multi-dataset/xtts_v2", gpu=False)
         os.makedirs(output_dir, exist_ok=True)
         
@@ -47,7 +47,7 @@ def generate_audio(translated_file: str, output_dir: str, speaker_wav: str, lang
         for i, sub in enumerate(subtitles):
             output_file = os.path.join(output_dir, f"audio_{i:03d}.wav")
             
-            print(f"\nGenerating audio {i+1}/{len(subtitles)}")
+            print(f"\nĐàn tạo chunk: {i+1}/{len(subtitles)}")
             if not generate_audio_from_text(tts, sub['text'], output_file, speaker_wav, language):
                 return False
                 
