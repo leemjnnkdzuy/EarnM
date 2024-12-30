@@ -9,31 +9,6 @@ load_dotenv()
 api_key = get_google_api_key()
 genai.configure(api_key=api_key)
 
-def split_text_into_sentences(text):
-    sentences = []
-    current = ""
-    for char in text:
-        current += char
-        if char in ['.', '!', '?']:
-            if current.strip():
-                sentences.append(current.strip())
-            current = ""
-    if current.strip():
-        sentences.append(current.strip())
-    return sentences
-
-def create_chunks(sentences, chunk_size=70):
-    chunks = []
-    current_chunk = []
-    for sentence in sentences:
-        current_chunk.append(sentence)
-        if len(current_chunk) >= chunk_size:
-            chunks.append(" ".join(current_chunk))
-            current_chunk = []
-    if current_chunk:
-        chunks.append(" ".join(current_chunk))
-    return chunks
-
 def translate_text(text: str, target_lang: str) -> str:
     try:
         model = genai.GenerativeModel('gemini-pro')
@@ -84,50 +59,42 @@ def translate_text(text: str, target_lang: str) -> str:
 
 def translate_subtitle_file(input_file: str, output_file: str, target_lang: str) -> bool:
     try:
-        with open(input_file, 'r', encoding='utf-8') as f:
-            original_subs = json.load(f)
+        chunks_file = os.path.join(os.path.dirname(input_file), 'subtitle_chunks.json')
+        with open(chunks_file, 'r', encoding='utf-8') as f:
+            chunks = json.load(f)
 
-        full_text = " ".join(sub['text'] for sub in original_subs)
-        
-        sentences = split_text_into_sentences(full_text)
-        
-        chunks = create_chunks(sentences)
         temp_file = os.path.join(os.path.dirname(output_file), 'temp_translate_subs.json')
-        with open(temp_file, 'w', encoding='utf-8') as f:
-            json.dump([{'chunk': chunk} for chunk in chunks], f, ensure_ascii=False, indent=2)
         
         translated_chunks = []
         success_count = 0
         
         for i, chunk in enumerate(chunks, 1):
-            print(f"\nXử lý chuck {i}/{len(chunks)}")
-            translated = translate_text(chunk, target_lang)
+            print(f"\nXử lý chunk #{chunk['id']}/{len(chunks)}")
+            translated = translate_text(chunk['text'], target_lang)
             
-            if translated and translated != chunk:
-                translated_chunks.append(translated)
+            if translated and translated != chunk['text']:
+                translated_chunks.append({
+                    'id': chunk['id'],
+                    'sentences': chunk['sentences'],
+                    'text': translated
+                })
                 success_count += 1
-                print(f"Chunk {i} đã được dịch.")
+                print(f"Chunk #{chunk['id']} đã được dịch thành công.")
             else:
-                print(f"Chunk {i} không thể dịch.")
+                print(f"Chunk #{chunk['id']} không thể dịch.")
                 translated_chunks.append(chunk)
+            
+            with open(temp_file, 'w', encoding='utf-8') as f:
+                json.dump(translated_chunks, f, ensure_ascii=False, indent=2)
             
             time.sleep(1)
         
         if success_count == 0:
-            print("\nKhông có chuck nào được tạo ra!")
+            print("\nKhông có chunk nào được dịch!")
             return False
-        
-        final_translation = " ".join(translated_chunks)
-        
-        video_duration = max(sub['end'] for sub in original_subs)
-        final_subtitle = [{
-            'start': 0,
-            'end': video_duration,
-            'text': final_translation
-        }]
-        
+
         with open(output_file, 'w', encoding='utf-8') as f:
-            json.dump(final_subtitle, f, ensure_ascii=False, indent=2)
+            json.dump(translated_chunks, f, ensure_ascii=False, indent=2)
         
         print(f"Hoàn thành dịch {success_count}/{len(chunks)} chunks")
         return success_count > 0

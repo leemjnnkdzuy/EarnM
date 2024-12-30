@@ -19,6 +19,7 @@ ENV/
 */GeneratedAudio/
 */FinalVideo/
 */GeneratedSubs/
+*/FinalAudio/
 
 # Model files
 *.pt

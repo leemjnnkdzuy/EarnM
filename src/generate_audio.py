@@ -2,9 +2,19 @@ from TTS.api import TTS
 import json
 import os
 from pydub import AudioSegment
+import torch
+import warnings
+import logging
+import transformers
+
+warnings.filterwarnings('ignore')
+logging.getLogger('transformers').setLevel(logging.ERROR)
+transformers.logging.set_verbosity_error()
+logging.getLogger('TTS').setLevel(logging.ERROR)
 
 def generate_audio_from_text(tts, text: str, output_path: str, speaker_wav: str, language: str = "en") -> bool:
     try:
+        print(f"Đang tạo audio cho đoạn văn: {text[:50]}...")
         tts.tts_to_file(
             text=text,
             file_path=output_path,
@@ -12,51 +22,59 @@ def generate_audio_from_text(tts, text: str, output_path: str, speaker_wav: str,
             language=language,
             split_sentences=True
         )
-        return os.path.exists(output_path)
-    except Exception as e:
-        print(f"Error: {e}")
+        if os.path.exists(output_path):
+            audio_size = os.path.getsize(output_path)
+            print(f"Kích thước file audio đã tạo: {audio_size} bytes")
+            if audio_size == 0:
+                print("Cảnh báo: File audio được tạo ra rỗng")
+                return False
+            return True
         return False
-
-def adjust_audio_duration(audio_file: str, start_time: float, end_time: float) -> bool:
-    try:
-        audio = AudioSegment.from_wav(audio_file)
-        
-        start_ms = int(start_time * 1000)
-        end_ms = int(end_time * 1000)
-        
-        audio_segment = audio[start_ms:end_ms]
-        
-        audio_segment.export(audio_file, format="wav")
-        return True
     except Exception as e:
-        print(f"Error: {e}")
+        print(f"Lỗi khi tạo audio: {str(e)}")
         return False
 
 def generate_audio(translated_file: str, output_dir: str, speaker_wav: str, language: str = "en") -> bool:
     try:
+        print(f"CUDA: {torch.cuda.is_available()}")
+        if torch.cuda.is_available():
+            print(f"GPU: {torch.cuda.get_device_name()}")
+            print(f"Bộ nhớ: {torch.cuda.get_device_properties(0).total_memory / 1024**2} MB")
+
+        logging.disable(logging.WARNING)
+        device = "cuda" if torch.cuda.is_available() else "cpu"
+        print(f"Đang sử dụng: {device}")
+        tts = TTS("tts_models/multilingual/multi-dataset/xtts_v2")
+        logging.disable(logging.NOTSET)
+        
         try:
-            tts = TTS("tts_models/multilingual/multi-dataset/xtts_v2", gpu=True)
-        except:
-            print("Sử dụng CPU.")
-            tts = TTS("tts_models/multilingual/multi-dataset/xtts_v2", gpu=False)
+            tts.to(device)
+        except Exception as e:
+            device = "cpu"
+            tts.to(device)
+        
         os.makedirs(output_dir, exist_ok=True)
-        
-        with open(translated_file, 'r', encoding='utf-8') as f:
-            subtitles = json.load(f)
 
-        for i, sub in enumerate(subtitles):
-            output_file = os.path.join(output_dir, f"audio_{i:03d}.wav")
+        temp_file = os.path.join(os.path.dirname(translated_file), 'temp_translate_subs.json')
+        with open(temp_file, 'r', encoding='utf-8') as f:
+            chunks = json.load(f)
+
+        chunks.sort(key=lambda x: x['id'])
+
+        success_count = 0
+        for chunk in chunks:
+            output_file = os.path.join(output_dir, f"audio_{chunk['id']:03d}.wav")
             
-            print(f"\nĐàn tạo chunk: {i+1}/{len(subtitles)}")
-            if not generate_audio_from_text(tts, sub['text'], output_file, speaker_wav, language):
-                return False
-                
-            if 'start' in sub and 'end' in sub:
-                if not adjust_audio_duration(output_file, sub['start'], sub['end']):
-                    return False
-
-        return True
+            print(f"\nĐang tạo chunk #{chunk['id']}/{len(chunks)}")
+            if generate_audio_from_text(tts, chunk['text'], output_file, speaker_wav, language):
+                success_count += 1
+                print(f"Chunk #{chunk['id']} đã được tạo thành công.")
+            else:
+                print(f"Cảnh báo: Không thể tạo chunk #{chunk['id']}")
         
+        print(f"Đã tạo thành công {success_count} trên tổng số {len(chunks)} chunks")
+        return success_count > 0  # Return True if at least one chunk was generated
+            
     except Exception as e:
-        print(f"Error: {e}")
+        print(f"Lỗi nghiêm trọng trong generate_audio: {str(e)}")
         return False

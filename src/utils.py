@@ -1,5 +1,6 @@
 import subprocess
 import re
+import torch
 import os
 from dotenv import load_dotenv
 
@@ -9,7 +10,7 @@ def create_folders(paths):
             os.makedirs(path, exist_ok=True)
         return True
     except Exception as e:
-        print(f"Không thể tạo folder: {e}")
+        print(f"\nKhông thể tạo folder: {e}")
         return False
 
 def check_ffmpeg():
@@ -65,3 +66,7 @@ def get_google_api_key():
         raise ValueError("GOOGLE_API_KEY không được tìm thấy!\n")
     print("GOOGLE_API_KEY load thành công!\n")
     return api_key
+
+def set_grpc_env():
+    os.environ["GRPC_VERBOSITY"] = "NONE"
+    os.environ["GRPC_LOG_SEVERITY_LEVEL"] = "ERROR"
