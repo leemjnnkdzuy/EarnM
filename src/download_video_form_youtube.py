@@ -1,7 +1,6 @@
 import yt_dlp
 import os
-import time
-from .utils import check_ffmpeg
+from .utils import check_ffmpeg, progress_hook
 
 def download_youtube_video(url: str, output_path: str = "./") -> bool:
     try:
@@ -38,19 +37,4 @@ def download_youtube_video(url: str, output_path: str = "./") -> bool:
     except Exception as e:
         print(f"ERR: {str(e)}")
         return False
-
-last_update = 0
-
-def progress_hook(d):
-    global last_update
-    if d['status'] == 'downloading':
-        current_time = time.time()
-        if current_time - last_update >= 0.5:
-            percent = d.get('_percent_str', '0.0%')
-            speed = d.get('_speed_str', 'N/A')
-            eta = d.get('_eta_str', 'N/A')
-            print(f"\rDownloading... {percent} Speed: {speed} ETA: {eta}", end='', flush=True)
-            last_update = current_time
-    elif d['status'] == 'finished':
-        print("\n\nTải video thành công, đang tách audio...")
 

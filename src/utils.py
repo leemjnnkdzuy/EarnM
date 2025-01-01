@@ -2,6 +2,7 @@ import subprocess
 import re
 import torch
 import os
+import time
 import whisper
 from dotenv import load_dotenv
 
@@ -75,3 +76,18 @@ def load_whisper_model():
     except Exception as e:
         print(f"Lỗi load model: {e}")
         return None
+
+last_update = 0
+def progress_hook(d):
+    
+    global last_update
+    if d['status'] == 'downloading':
+        current_time = time.time()
+        if current_time - last_update >= 0.5:
+            percent = d.get('_percent_str', '0.0%')
+            speed = d.get('_speed_str', 'N/A')
+            eta = d.get('_eta_str', 'N/A')
+            print(f"\rDownloading... {percent} Speed: {speed} ETA: {eta}", end='', flush=True)
+            last_update = current_time
+    elif d['status'] == 'finished':
+        print("\n\nTải video thành công, đang tách audio...")
