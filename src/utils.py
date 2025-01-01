@@ -27,32 +27,26 @@ def check_ffmpeg():
 
 def check_gpu_support():
     try:
-        result = subprocess.run(['ffmpeg', '-hide_banner', '-encoders'], capture_output=True, text=True)
-        if 'h264_nvenc' not in result.stdout:
+        # Check NVIDIA GPU
+        nvidia_check = subprocess.run(['nvidia-smi'], capture_output=True)
+        if nvidia_check.returncode != 0:
             return False
             
-        nvidia_check = subprocess.run(['nvidia-smi'], capture_output=True)
-        return nvidia_check.returncode == 0
+        # Check NVENC support
+        result = subprocess.run(['ffmpeg', '-hide_banner', '-encoders'], capture_output=True, text=True)
+        return 'h264_nvenc' in result.stdout
     except:
         return False
 
-def get_gpu_encoding_settings():
-    return {
-        'codec': 'h264_nvenc',
-        'preset': 'p6',
-        'params': [
-            '-preset', 'hq',
-            '-rc:v', 'vbr',
-            '-cq', '16',
-            '-qmin', '16',
-            '-qmax', '21',
-            '-profile:v', 'high',
-            '-pixel_format', 'yuv420p',
-            '-b:v', '0',
-            '-maxrate', '400M',
-            '-bufsize', '400M'
-        ]
-    }
+def setup_gpu():
+    if torch.cuda.is_available():
+        torch.cuda.empty_cache()
+        torch.backends.cudnn.benchmark = True
+        torch.backends.cudnn.enabled = True
+        torch.backends.cuda.matmul.allow_tf32 = True  # Enable TF32
+        torch.backends.cudnn.allow_tf32 = True        # Enable TF32
+        return True
+    return False
 
 def sanitize_filename(filename):
     clean_name = re.sub(r'[<>:"/\\|?*]', '', filename)

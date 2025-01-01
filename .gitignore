@@ -23,4 +23,5 @@ ENV/
 
 # Model files
 *.pt
+*.mp4
 *.pth
