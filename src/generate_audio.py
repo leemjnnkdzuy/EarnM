@@ -72,7 +72,7 @@ def generate_audio(translated_file: str, output_dir: str, speaker_wav: str, lang
                 print(f"Cảnh báo: Không thể tạo chunk #{chunk['id']}")
         
         print(f"Đã tạo thành công {success_count} trên tổng số {len(chunks)} chunks")
-        return success_count > 0  # Return True if at least one chunk was generated
+        return success_count > 0
             
     except Exception as e:
         print(f"Lỗi nghiêm trọng trong generate_audio: {str(e)}")

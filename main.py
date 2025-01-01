@@ -2,7 +2,7 @@ import os
 import asyncio
 import warnings
 
-from src.utils import set_grpc_env, create_folders, voice_map
+from src.utils import set_grpc_env, create_folders, voice_map, default_url
 from src.download_video_form_youtube import download_youtube_video
 from src.get_sound import extract_audio
 from src.get_original_sub import create_sub_from_mp3 
@@ -15,7 +15,7 @@ from src.make_final_audio import make_final_audio
 
 warnings.filterwarnings("ignore", category=FutureWarning)
 
-video_ID = "unS1b232G0k"
+video_ID = "9n0xdFMfbGE"
 TargetLang = "en"
 
 async def async_main():
@@ -28,7 +28,7 @@ async def async_main():
     final_audio_path = os.path.join(".", video_ID, "FinalAudio")
     
     # 1: 720p, 2: 1080p, 3: 1440p, 4: 2160p, None: original
-    render_mode = None
+    render_mode = 3
     
     if not create_folders([
         download_path,
@@ -42,7 +42,7 @@ async def async_main():
         print("\nKhông thể tạo folder!")
         return
         
-    success = download_youtube_video('https://www.youtube.com/watch?v=' + video_ID, download_path)
+    success = download_youtube_video(default_url + video_ID, download_path)
     if not success:
         print("\nTải video không thành công!")
         return

@@ -6,6 +6,12 @@ import time
 import whisper
 from dotenv import load_dotenv
 
+voice_map = {
+    'en': "assets/voice/en/Kendra_voice.wav",
+}
+
+default_url = "https://www.youtube.com/watch?v="
+
 def create_folders(paths):
     try:
         for path in paths:
@@ -29,12 +35,10 @@ def check_ffmpeg():
 
 def check_gpu_support():
     try:
-        # Check NVIDIA GPU
         nvidia_check = subprocess.run(['nvidia-smi'], capture_output=True)
         if nvidia_check.returncode != 0:
             return False
             
-        # Check NVENC support
         result = subprocess.run(['ffmpeg', '-hide_banner', '-encoders'], capture_output=True, text=True)
         return 'h264_nvenc' in result.stdout
     except:
@@ -45,8 +49,8 @@ def setup_gpu():
         torch.cuda.empty_cache()
         torch.backends.cudnn.benchmark = True
         torch.backends.cudnn.enabled = True
-        torch.backends.cuda.matmul.allow_tf32 = True  # Enable TF32
-        torch.backends.cudnn.allow_tf32 = True        # Enable TF32
+        torch.backends.cuda.matmul.allow_tf32 = True
+        torch.backends.cudnn.allow_tf32 = True
         return True
     return False
 
@@ -76,10 +80,6 @@ def load_whisper_model():
     except Exception as e:
         print(f"Lỗi load model: {e}")
         return None
-
-voice_map = {
-    'en': "assets/voice/en/Kendra_voice.wav",
-}
 
 last_update = 0
 def progress_hook(d):

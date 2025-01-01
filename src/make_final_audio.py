@@ -33,11 +33,9 @@ def make_final_audio(subs_path: str, generated_audio_path: str, final_audio_path
             print("Lỗi: Không có nội dung audio hợp lệ để ghép")
             return False
 
-        # Get actual duration after concatenation
         actual_duration = len(combined)
         print(f"Thời lượng audio sau khi ghép: {actual_duration/1000:.2f} giây")
             
-        # Read subtitle timing
         subtitle_file = os.path.join(subs_path, 'subtitle.json')
         if not os.path.exists(subtitle_file):
             print("Không tìm thấy file subtitle.json")
@@ -52,22 +50,18 @@ def make_final_audio(subs_path: str, generated_audio_path: str, final_audio_path
         
         print(f"Thời lượng subtitle cần đạt: {desired_duration/1000:.2f} giây")
         
-        # New speed adjustment logic
         speed_factor = actual_duration / desired_duration
         print(f"Hệ số điều chỉnh tốc độ: {speed_factor:.2f}")
         
         try:
-            # Use speedup/slowdown directly instead of frame rate adjustment
             if speed_factor > 1:
                 combined = combined.speedup(playback_speed=speed_factor)
             else:
                 combined = combined.speedup(playback_speed=speed_factor)
                 
-            # Verify and force exact length
             final_duration = len(combined)
             print(f"Thời lượng sau điều chỉnh: {final_duration/1000:.2f} giây")
             
-            # Trim or pad to exact length
             if final_duration != desired_duration:
                 if final_duration > desired_duration:
                     combined = combined[:desired_duration]
@@ -77,7 +71,6 @@ def make_final_audio(subs_path: str, generated_audio_path: str, final_audio_path
             print(f"Lỗi khi điều chỉnh tốc độ: {str(e)}")
             return False
 
-        # Export final audio
         output_path = os.path.join(final_audio_path, "final_audio.wav")
         combined.export(output_path, format="wav")
         print(f"Đã xuất file audio cuối cùng: {output_path}")
