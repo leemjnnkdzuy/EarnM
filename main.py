@@ -109,7 +109,7 @@ async def async_main():
             if make_final_audio(subs_path, generated_audio_path, final_audio_path):
                 print("\nGhép các đoạn audio thành công!")
                 
-                if create_sub_from_generated_audio(generated_audio_path, translated_file):
+                if create_sub_from_generated_audio(final_audio_path, translated_file):
                     print("\nCập nhật sub từ audio thành công!")
                     
                     if make_final_video(download_path, final_audio_path, final_video_path, mode=render_mode):

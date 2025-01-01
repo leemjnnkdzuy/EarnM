@@ -2,6 +2,7 @@ import subprocess
 import re
 import torch
 import os
+import whisper
 from dotenv import load_dotenv
 
 def create_folders(paths):
@@ -64,3 +65,13 @@ def get_google_api_key():
 def set_grpc_env():
     os.environ["GRPC_VERBOSITY"] = "NONE"
     os.environ["GRPC_LOG_SEVERITY_LEVEL"] = "ERROR"
+
+def load_whisper_model():
+    try:
+        import torch
+        device = "cuda" if torch.cuda.is_available() else "cpu"
+        model = whisper.load_model("base", device=device)
+        return model
+    except Exception as e:
+        print(f"Lỗi load model: {e}")
+        return None

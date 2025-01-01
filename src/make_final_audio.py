@@ -78,8 +78,8 @@ def make_final_audio(subs_path: str, generated_audio_path: str, final_audio_path
             return False
 
         # Export final audio
-        output_path = os.path.join(final_audio_path, "final_audio.mp3")
-        combined.export(output_path, format="mp3")
+        output_path = os.path.join(final_audio_path, "final_audio.wav")
+        combined.export(output_path, format="wav")
         print(f"Đã xuất file audio cuối cùng: {output_path}")
         return True
         

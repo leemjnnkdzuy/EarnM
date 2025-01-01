@@ -4,17 +4,7 @@ import os
 import json
 from pydub import AudioSegment
 from pydub.silence import split_on_silence
-import whisper
-
-def load_whisper_model():
-    try:
-        import torch
-        device = "cuda" if torch.cuda.is_available() else "cpu"
-        model = whisper.load_model("base", device=device)
-        return model
-    except Exception as e:
-        print(f"Lỗi load model: {e}")
-        return None
+from src.utils import load_whisper_model
 
 def transcribe_with_whisper(audio_file, model):
     try:

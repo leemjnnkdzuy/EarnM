@@ -1,29 +1,10 @@
 import os
 import json
-import whisper
 from glob import glob
 from pydub import AudioSegment
 from pydub.silence import detect_nonsilent
 import torch
-import logging
-import warnings
-
-def load_whisper_model():
-    try:
-        logging.getLogger("whisper").setLevel(logging.ERROR)
-        warnings.filterwarnings("ignore")
-        
-        device = "cuda" if torch.cuda.is_available() else "cpu"
-        
-        model = whisper.load_model(
-            "base",
-            device=device,
-            download_root=os.path.join(os.path.expanduser("~"), ".cache", "whisper")
-        )
-        return model
-    except Exception as e:
-        print(f"Error: {e}")
-        return None
+from src.utils import load_whisper_model
 
 def transcribe_with_whisper(audio_file, model):
     try:
@@ -75,7 +56,7 @@ def create_sub_from_generated_audio(audio_dir, output_file):
         sub_data = []
         current_id = 1
         
-        audio_files = sorted(glob(os.path.join(audio_dir, "audio_*.wav")))
+        audio_files = sorted(glob(os.path.join(audio_dir, "final_audio.mp3")))
         
         accumulated_time = 0
         for i, audio_file in enumerate(audio_files):
