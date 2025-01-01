@@ -1,6 +1,7 @@
 import os
 import asyncio
 import warnings
+from dotenv import load_dotenv
 
 from src.utils import set_grpc_env, create_folders, voice_map, default_url
 from src.download_video_form_youtube import download_youtube_video
@@ -14,8 +15,13 @@ from src.create_chunk import create_chunks_from_subtitles, save_chunks
 from src.make_final_audio import make_final_audio
 
 warnings.filterwarnings("ignore", category=FutureWarning)
+load_dotenv()
 
-video_ID = "9n0xdFMfbGE"
+video_ID = os.getenv('VIDEO_ID')
+if not video_ID:
+    print("VIDEO_ID không được tìm thấy!")
+    exit()
+
 TargetLang = "en"
 
 async def async_main():
