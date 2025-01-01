@@ -20,11 +20,10 @@ def get_video_info(video_path: str) -> dict:
 def make_final_video(download_path: str, audio_path: str, final_video_path: str, mode: Optional[int] = 2) -> bool:
     try:
         video_file = os.path.join(download_path, 'video.mp4')
-        audio_file = os.path.join(audio_path, 'final_audio.mp3')
+        audio_file = os.path.join(audio_path, 'final_audio.wav')
         output_path = os.path.join(final_video_path, "final_video.mp4")
         temp_video = os.path.join(final_video_path, "temp_video.mp4")
 
-        # Get target resolution
         resolutions = {
             1: (1280, 720),
             2: (1920, 1080),
@@ -33,7 +32,6 @@ def make_final_video(download_path: str, audio_path: str, final_video_path: str,
         }
         width, height = resolutions.get(mode, (1920, 1080))
 
-        # Step 1: Scale video with GPU acceleration
         print("\nĐang scale video...")
         scale_cmd = [
             'ffmpeg', '-y',
@@ -57,11 +55,21 @@ def make_final_video(download_path: str, audio_path: str, final_video_path: str,
         
         result = subprocess.run(scale_cmd, capture_output=True, text=True)
         if result.returncode != 0:
-            print(f"Lỗi khi scale video: {result.stderr}")
-            return False
+            scale_cmd = [
+                'ffmpeg', '-y',
+                '-i', video_file,
+                '-c:v', 'libx264',
+                '-preset', 'fast',
+                '-vf', f'scale={width}:{height}',
+                '-an',
+                temp_video
+            ]
+            result = subprocess.run(scale_cmd, capture_output=True, text=True)
+            if result.returncode != 0:
+                print(f"Lỗi khi scale video: {result.stderr}")
+                return False
 
-        # Step 2: Merge scaled video with audio
-        print("Đang merge audio...")
+        print("\nĐang merge audio...")
         merge_cmd = [
             'ffmpeg', '-y',
             '-i', temp_video,
@@ -74,7 +82,6 @@ def make_final_video(download_path: str, audio_path: str, final_video_path: str,
         
         result = subprocess.run(merge_cmd, capture_output=True, text=True)
         
-        # Cleanup temp file
         if os.path.exists(temp_video):
             os.remove(temp_video)
 

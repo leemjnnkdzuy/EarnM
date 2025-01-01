@@ -77,6 +77,10 @@ def load_whisper_model():
         print(f"Lỗi load model: {e}")
         return None
 
+voice_map = {
+    'en': "assets/voice/en/Kendra_voice.wav",
+}
+
 last_update = 0
 def progress_hook(d):
     

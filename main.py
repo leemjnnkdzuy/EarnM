@@ -2,10 +2,9 @@ import os
 import asyncio
 import warnings
 
-from src.utils import set_grpc_env
+from src.utils import set_grpc_env, create_folders, voice_map
 from src.download_video_form_youtube import download_youtube_video
 from src.get_sound import extract_audio
-from src.utils import create_folders
 from src.get_original_sub import create_sub_from_mp3 
 from src.translate_sub import translate_subtitle_file
 from src.generate_audio import generate_audio
@@ -16,22 +15,17 @@ from src.make_final_audio import make_final_audio
 
 warnings.filterwarnings("ignore", category=FutureWarning)
 
-voice_map = {
-    'en': "assets/voice/en/Kendra_voice.wav",
-}
-
-video_url = "https://www.youtube.com/watch?v=OuaW_IefFPg"
-NameFolder = "test2"
+video_ID = "unS1b232G0k"
 TargetLang = "en"
 
 async def async_main():
-    download_path = os.path.join(".", NameFolder, "Downloads")
-    audio_path = os.path.join(".", NameFolder, "OriginalSound")
-    subs_path = os.path.join(".", NameFolder, "OriginalSubs")
-    translated_subs_path = os.path.join(".", NameFolder, "TranslateSubs")
-    generated_audio_path = os.path.join(".", NameFolder, "GeneratedAudio")
-    final_video_path = os.path.join(".", NameFolder, "FinalVideo")
-    final_audio_path = os.path.join(".", NameFolder, "FinalAudio")
+    download_path = os.path.join(".", video_ID, "Downloads")
+    audio_path = os.path.join(".", video_ID, "OriginalSound")
+    subs_path = os.path.join(".", video_ID, "OriginalSubs")
+    translated_subs_path = os.path.join(".", video_ID, "TranslateSubs")
+    generated_audio_path = os.path.join(".", video_ID, "GeneratedAudio")
+    final_video_path = os.path.join(".", video_ID, "FinalVideo")
+    final_audio_path = os.path.join(".", video_ID, "FinalAudio")
     
     # 1: 720p, 2: 1080p, 3: 1440p, 4: 2160p, None: original
     render_mode = None
@@ -48,7 +42,7 @@ async def async_main():
         print("\nKhông thể tạo folder!")
         return
         
-    success = download_youtube_video(video_url, download_path)
+    success = download_youtube_video('https://www.youtube.com/watch?v=' + video_ID, download_path)
     if not success:
         print("\nTải video không thành công!")
         return

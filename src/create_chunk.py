@@ -15,11 +15,11 @@ def split_text_into_sentences(text: str) -> List[str]:
                 current += chars[i+1]
                 i += 1
             
-            if current.strip() and len(current.strip()) <= 250:
+            if current.strip() and len(current.strip()) <= 230:
                 sentences.append(current.strip())
             elif current.strip():
                 last_end = -1
-                for j in range(min(250, len(current))):
+                for j in range(min(230, len(current))):
                     if current[j] in ['.', '!', '?']:
                         last_end = j + 1
                 
@@ -31,7 +31,7 @@ def split_text_into_sentences(text: str) -> List[str]:
             current = ""
         i += 1
     
-    if current.strip() and len(current.strip()) <= 250:
+    if current.strip() and len(current.strip()) <= 230:
         sentences.append(current.strip())
     
     return sentences
