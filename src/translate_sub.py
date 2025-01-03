@@ -14,7 +14,8 @@ def translate_text(text: str, target_lang: str) -> str:
         model = genai.GenerativeModel('gemini-pro')
         
         prompt = f"""You are a professional translator.
-        Translate this text to {target_lang}. Keep the translation natural and accurate.
+        Translate this text to {target_lang}. 
+        Keep the translation natural and accurate. 
         Only return the translated text, nothing else.
         Text to translate: {text}"""
         
@@ -67,10 +68,22 @@ def translate_subtitle_file(input_file: str, output_file: str, target_lang: str)
         
         translated_chunks = []
         success_count = 0
+        MAX_ATTEMPTS = 3
         
         for i, chunk in enumerate(chunks, 1):
-            print(f"\nXử lý chunk #{chunk['id']}/{len(chunks)}")
-            translated = translate_text(chunk['text'], target_lang)
+            
+            attempts = 0
+            while True:
+                translated = translate_text(chunk['text'], target_lang)
+                print(f"\nXử lý chunk #{chunk['id']}/{len(chunks)} có: ", len(translated.split()), " từ")
+                
+                attempts += 1
+                if len(translated.split()) <= 2000:
+                    break
+                if attempts >= MAX_ATTEMPTS:
+                    print(f"Đã vượt quá số lần thử cho chunk #{chunk['id']}")
+                    break
+                print("Chunk quá 2000 từ, tiến hành dịch lại...")
             
             if translated and translated != chunk['text']:
                 translated_chunks.append({

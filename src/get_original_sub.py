@@ -39,10 +39,10 @@ def create_sub_from_mp3(mp3_file, output_file):
             seek_step=25
         )
         
-        sub_data = []
+        subtitles = []
         current_offset = 0.0
         
-        for i, chunk in enumerate(chunks, 1):
+        for chunk in chunks:
             duration_ms = len(chunk)
             if duration_ms < 1000:
                 current_offset += duration_ms
@@ -54,22 +54,23 @@ def create_sub_from_mp3(mp3_file, output_file):
             try:
                 text = transcribe_with_whisper(chunk_wav_path, whisper_model)
                 if text:
-                    sub_data.append({
-                        "id": i,
-                        "start": current_offset / 1000.0,
-                        "end": (current_offset + duration_ms) / 1000.0,
+                    subtitle = {
+                        "start": round(current_offset / 1000.0, 3),
+                        "end": round((current_offset + duration_ms) / 1000.0, 3),
                         "text": text.strip()
-                    })
+                    }
+                    subtitles.append(subtitle)
                 current_offset += duration_ms
                 
             except Exception as e:
                 print(f"Lỗi nhận dạng đoạn: {e}")
                 current_offset += duration_ms
-            
-            os.remove(chunk_wav_path)
+            finally:
+                if os.path.exists(chunk_wav_path):
+                    os.remove(chunk_wav_path)
 
         with open(output_file, "w", encoding="utf-8") as f:
-            json.dump(sub_data, f, ensure_ascii=False, indent=2)
+            json.dump(subtitles, f, ensure_ascii=False, indent=2)
             
         return True
         

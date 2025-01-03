@@ -2,6 +2,7 @@ import os
 from pydub import AudioSegment
 import json
 import re
+from concurrent.futures import ThreadPoolExecutor
 
 def make_final_audio(subs_path: str, generated_audio_path: str, final_audio_path: str) -> bool:
     try:
@@ -19,14 +20,11 @@ def make_final_audio(subs_path: str, generated_audio_path: str, final_audio_path
         audio_files.sort(key=get_audio_id)
         print(f"Đã tìm thấy {len(audio_files)} file audio để ghép")
         
+        with ThreadPoolExecutor() as executor:
+            segments = list(executor.map(lambda fp: AudioSegment.from_wav(fp),
+                           [os.path.join(generated_audio_path, f) for f in audio_files if os.path.getsize(os.path.join(generated_audio_path, f)) != 0]))
         combined = AudioSegment.empty()
-        for f in audio_files:
-            file_path = os.path.join(generated_audio_path, f)
-            if os.path.getsize(file_path) == 0:
-                print(f"Cảnh báo: Bỏ qua file audio rỗng {f}")
-                continue
-            print(f"Đang ghép file {f}")
-            segment = AudioSegment.from_wav(file_path)
+        for segment in segments:
             combined += segment
 
         if len(combined) == 0:

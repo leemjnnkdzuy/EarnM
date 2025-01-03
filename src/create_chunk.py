@@ -11,56 +11,52 @@ def split_text_into_sentences(text: str) -> List[str]:
         current += chars[i]
         
         if chars[i] in ['.', '!', '?']:
-            while i + 1 < len(chars) and chars[i+1] in ['.', '!', '?']:
-                current += chars[i+1]
+            if i + 1 < len(chars) and chars[i+1].isdigit():
                 i += 1
-            
-            if current.strip() and len(current.strip()) <= 230:
-                sentences.append(current.strip())
-            elif current.strip():
-                last_end = -1
-                for j in range(min(230, len(current))):
-                    if current[j] in ['.', '!', '?']:
-                        last_end = j + 1
-                
-                if last_end != -1:
-                    sentences.append(current[:last_end].strip())
-                    current = current[last_end:].strip()
-                    i -= len(current)
-                    continue
-            current = ""
+                current += chars[i]
+            else:
+                while i + 1 < len(chars) and chars[i+1] in ['.', '!', '?']:
+                    current += chars[i+1]
+                    i += 1
+                if current.strip():
+                    sentences.append(current.strip())
+                current = ""
         i += 1
     
-    if current.strip() and len(current.strip()) <= 230:
+    if current.strip():
         sentences.append(current.strip())
     
     return sentences
 
-def create_chunks_from_text(text: str, sentences_per_chunk: int = 50) -> List[Dict]:
-    sentences = split_text_into_sentences(text)
+def create_chunks_from_text(text: str):
+    punctuation = {'.', '!', '?'}
+    words = text.split()
     chunks = []
-    current_chunk = []
-    chunk_id = 1
-    
-    for sentence in sentences:
-        current_chunk.append(sentence)
-        
-        if len(current_chunk) >= sentences_per_chunk:
-            chunks.append({
-                'id': chunk_id,
-                'sentences': current_chunk.copy(),
-                'text': ' '.join(current_chunk)
-            })
-            chunk_id += 1
-            current_chunk = []
-    
-    if current_chunk:
+    start = 0
+    MAX_WORDS = 2000
+
+    while start < len(words):
+        end = min(start + MAX_WORDS, len(words))
+        chunk_words = words[start:end]
+
+        cut_index = -1
+        for i in range(len(chunk_words) - 1, -1, -1):
+            if chunk_words[i] and chunk_words[i][-1] in punctuation:
+                cut_index = i
+                break
+
+        if cut_index != -1 and end < len(words):
+            end = start + cut_index + 1
+            chunk_words = words[start:end]
+
+        chunk_text = ' '.join(chunk_words)
         chunks.append({
-            'id': chunk_id,
-            'sentences': current_chunk,
-            'text': ' '.join(current_chunk)
+            'id': len(chunks) + 1,
+            'sentences': [],
+            'text': chunk_text
         })
-    
+        start = end
+
     return chunks
 
 def create_chunks_from_subtitles(subtitle_file: str) -> List[Dict]:
