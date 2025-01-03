@@ -28,11 +28,9 @@ else:
 TargetLang = "en"
 
 async def cleanup():
-    print("\nCleaning up...")
     await asyncio.sleep(0.5)
 
 async def async_main():
-    # Setup signal handlers
     loop = asyncio.get_running_loop()
     for sig in (signal.SIGINT, signal.SIGTERM):
         loop.add_signal_handler(sig, lambda s=sig: asyncio.create_task(handle_signal(s)))
@@ -154,6 +152,6 @@ if __name__ == "__main__":
     try:
         asyncio.run(async_main())
     except KeyboardInterrupt:
-        print("\nProgram terminated by user")
+        print("\n")
     except Exception as e:
-        print(f"\nProgram terminated due to error: {str(e)}")
+        print(f"\nError: {str(e)}")
